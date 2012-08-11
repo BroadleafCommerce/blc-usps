@@ -12,31 +12,34 @@
 
 	<context:component-scan base-package="org.broadleafcommerce.profile.web"/>
 	<context:component-scan base-package="org.broadleafcommerce.core.web"/>
-	
-	<bean id="blCacheManager"
-          class="org.broadleafcommerce.common.extensibility.cache.ehcache.MergeEhCacheManagerFactoryBean">
-        <property name="shared" value="true"/>
-        <property name="configLocations">
-            <list>
-                <value>classpath:bl-override-ehcache.xml</value>
-            </list>
-        </property>
-    </bean>
-    
-    <bean id="blPersistenceUnitManager" class="org.broadleafcommerce.common.extensibility.jpa.MergePersistenceUnitManager">
-		<property name="persistenceXmlLocations">
-			<list>
-				<value>classpath*:/META-INF/persistence-test.xml</value>
-			</list>
-		</property>
-		<property name="dataSources">
+
+    <bean id="blMergedDataSources" class="org.springframework.beans.factory.config.MapFactoryBean">
+        <property name="sourceMap">
             <map>
                 <entry key="jdbc/test" value-ref="blDS"/>
                 <entry key="jdbc/testSecure" value-ref="blDS"/>
             </map>
         </property>
-		<property name="defaultDataSource" ref="blDS"/>
-	</bean>
+    </bean>
+
+    <bean id="blMergedPersistenceXmlLocations" class="org.springframework.beans.factory.config.ListFactoryBean">
+        <property name="sourceList">
+            <list>
+                <value>classpath*:/META-INF/persistence-test.xml</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- Delete this bean to enable caching - leaving it on for development is recommended -->
+    <!-- as it will allow changes made in the admin or directly on the database to be reflected -->
+    <!-- immediately. However, caching is obviously beneficial in production. -->
+    <bean id="blMergedCacheConfigLocations" class="org.springframework.beans.factory.config.ListFactoryBean">
+        <property name="sourceList">
+            <list>
+                <value>classpath:bl-override-ehcache.xml</value>
+            </list>
+        </property>
+    </bean>
 
     <bean id="blDS" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
 		<property name="driverClassName" value="org.hsqldb.jdbcDriver" />
