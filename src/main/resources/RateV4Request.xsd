@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.usps.com/webtools/rates/request" xmlns="http://www.usps.com/webtools/rates/request">
+    <xs:element name="RateV4Request" type="RateV4RequestType"/>
+    <xs:complexType name="RateV4RequestType">
+        <xs:sequence>
+            <xs:element type="xs:string" name="Revision" maxOccurs="1" minOccurs="0"/>
+            <xs:element type="RequestPackageV4Type" name="Package" maxOccurs="25" minOccurs="1"/>
+        </xs:sequence>
+        <xs:attribute type="xs:string" name="USERID" use="required"/>
+        <xs:attribute type="xs:string" name="PASSWORD" use="optional"/>
+        <xs:attribute type="xs:string" name="APPID" use="optional"/>
+        <xs:attribute type="xs:string" name="VERSION" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="RequestPackageV4Type">
+        <xs:sequence>
+            <xs:element name="Service" maxOccurs="1" minOccurs="1">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="ALL"/>
+                        <xs:enumeration value="FIRST CLASS"/>
+                        <xs:enumeration value="FIRST CLASS COMMERCIAL"/>
+                        <xs:enumeration value="FIRST CLASS HFP COMMERCIAL"/>
+                        <xs:enumeration value="PRIORITY"/>
+                        <xs:enumeration value="PRIORITY COMMERCIAL"/>
+                        <xs:enumeration value="PRIORITY HFP COMMERCIAL"/>
+                        <xs:enumeration value="EXPRESS"/>
+                        <xs:enumeration value="EXPRESS SH"/>
+                        <xs:enumeration value="EXPRESS HFP"/>
+                        <xs:enumeration value="EXPRESS COMMERCIAL"/>
+                        <xs:enumeration value="EXPRESS SH COMMERCIAL"/>
+                        <xs:enumeration value="EXPRESS HFP COMMERCIAL"/>
+                        <xs:enumeration value="ONLINE"/>
+                        <xs:enumeration value="PARCEL"/>
+                        <xs:enumeration value="MEDIA"/>
+                        <xs:enumeration value="LIBRARY"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="FirstClassMailType" minOccurs="0" maxOccurs="1">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="LETTER"/>
+                        <xs:enumeration value="FLAT"/>
+                        <xs:enumeration value="PARCEL"/>
+                        <xs:enumeration value="POSTCARD"/>
+                        <xs:enumeration value="PACKAGE SERVICE"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="ZipOrigination" maxOccurs="1" minOccurs="1">
+                <xs:simpleType>
+                    <xs:restriction base="xs:int">
+                        <xs:pattern value="\d{5}"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="ZipDestination" maxOccurs="1" minOccurs="1">
+                <xs:simpleType>
+                    <xs:restriction base="xs:int">
+                        <xs:pattern value="\d{5}"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="Pounds" maxOccurs="1" minOccurs="1">
+                <xs:simpleType>
+                    <xs:restriction base="xs:int">
+                        <xs:minInclusive value="0"/>
+                        <xs:maxInclusive value="70"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="Ounces" maxOccurs="1" minOccurs="1">
+                <xs:simpleType>
+                    <xs:restriction base="xs:float">
+                        <xs:minInclusive value="0"/>
+                        <xs:maxInclusive value="1120"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="Container" minOccurs="1" maxOccurs="1">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="VARIABLE"/>
+                        <xs:enumeration value="PADDED FLAT RATE ENVELOPE"/>
+                        <xs:enumeration value="LEGAL FLAT RATE ENVELOPE"/>
+                        <xs:enumeration value="SM FLAT RATE ENVELOPE"/>
+                        <xs:enumeration value="WINDOW FLAT RATE ENVELOPE"/>
+                        <xs:enumeration value="GIFT CARD FLAT RATE ENVELOPE"/>
+                        <xs:enumeration value="FLAT RATE BOX"/>
+                        <xs:enumeration value="SM FLAT RATE BOX"/>
+                        <xs:enumeration value="MD FLAT RATE BOX"/>
+                        <xs:enumeration value="LG FLAT RATE BOX"/>
+                        <xs:enumeration value="REGIONALRATEBOXA"/>
+                        <xs:enumeration value="REGIONALRATEBOXB"/>
+                        <xs:enumeration value="REGIONALRATEBOXC"/>
+                        <xs:enumeration value="RECTANGULAR"/>
+                        <xs:enumeration value="NONRECTANGULAR"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="Size" minOccurs="1" maxOccurs="1">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="REGULAR"/>
+                        <xs:enumeration value="LARGE"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element type="xs:float" name="Width" minOccurs="0" maxOccurs="1"/>
+            <xs:element type="xs:float" name="Length" minOccurs="0" maxOccurs="1"/>
+            <xs:element type="xs:float" name="Height" minOccurs="0" maxOccurs="1"/>
+            <xs:element type="xs:float" name="Girth" minOccurs="0" maxOccurs="1"/>
+            <xs:element type="xs:float" name="Value" minOccurs="0" maxOccurs="1"/>
+            <xs:element type="xs:float" name="AmountToCollect" minOccurs="0" maxOccurs="1"/>
+            <xs:element type="SpecialServicesRequestType" name="SpecialServices" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="SortBy" minOccurs="0" maxOccurs="1">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="CONTAINER"/>
+                        <xs:enumeration value="LETTER"/>
+                        <xs:enumeration value="LARGEENVELOPE"/>
+                        <xs:enumeration value="PACKAGE"/>
+                        <xs:enumeration value="FLATRATE"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element type="xs:boolean" name="Machinable" minOccurs="0" maxOccurs="1"/>
+            <xs:element type="xs:boolean" name="ReturnLocations" minOccurs="0" maxOccurs="1"/>
+            <xs:element type="xs:boolean" name="ReturnServiceInfo" minOccurs="0" maxOccurs="1"/>
+            <xs:element type="ShipDateType" name="ShipDate" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+        <xs:attribute type="xs:string" name="ID" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="SpecialServicesRequestType">
+        <xs:sequence>
+            <xs:element type="xs:int" name="SpecialService" minOccurs="1" maxOccurs="10"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ShipDateType">
+        <xs:simpleContent>
+            <xs:extension base="ShipDateFormatType">
+                <xs:attribute name="Option" type="ShipDateOptionType"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:simpleType name="ShipDateFormatType">
+        <xs:restriction base="xs:token">
+            <xs:pattern value="\d{2}-[a-zA-z]{3}-\d{4}"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="ShipDateOptionType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="EMSH"/>
+            <xs:enumeration value="HFP"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>
