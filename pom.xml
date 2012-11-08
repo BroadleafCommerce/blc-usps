@@ -191,6 +191,7 @@
                 </executions>
 				<configuration>
 					<schemaDirectory>${basedir}/src/main/resources</schemaDirectory>
+					<packageName>com.usps.webtools.rates</packageName>
 				</configuration>
 			</plugin>
 			

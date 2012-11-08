@@ -27,7 +27,7 @@ public class USPSFulfillmentOptionImpl extends FulfillmentOptionImpl implements 
     private static final long serialVersionUID = 1L;
 
     @Column(name="USPS_SERVICE_TYPE", nullable = false)
-    @AdminPresentation(friendlyName = "USPS Service Type", fieldType= SupportedFieldType.BROADLEAF_ENUMERATION, broadleafEnumeration="com.broadleafcommerce.vendor.ups.domain.type.UPSServiceType")
+    @AdminPresentation(friendlyName = "USPS Service Type", fieldType= SupportedFieldType.BROADLEAF_ENUMERATION, broadleafEnumeration="org.broadleafcommerce.vendor.usps.domain.type.USPSServiceType")
     protected String service;
 
     public USPSServiceType getService() {

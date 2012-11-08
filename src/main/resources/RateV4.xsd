@@ -1,6 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.usps.com/webtools/rates/request" xmlns="http://www.usps.com/webtools/rates/request">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="Error" type="ErrorV4Type"/>
     <xs:element name="RateV4Request" type="RateV4RequestType"/>
+    <xs:element name="RateV4Response" type="RateV4ResponseType"/>
+    
     <xs:complexType name="RateV4RequestType">
         <xs:sequence>
             <xs:element type="xs:string" name="Revision" maxOccurs="1" minOccurs="0"/>
@@ -159,5 +161,133 @@
             <xs:enumeration value="HFP"/>
         </xs:restriction>
     </xs:simpleType>
+    
+    <xs:complexType name="RateV4ResponseType">
+        <xs:sequence>
+            <xs:element type="ResponsePackageV4Type" name="Package" maxOccurs="25" minOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="PostageV4Type">
+        <xs:sequence>
+            <xs:element type="xs:string" name="MailService" minOccurs="1" maxOccurs="1"/>
+            <xs:element type="xs:float" name="Rate" minOccurs="1" maxOccurs="1"/>
+            <xs:element type="xs:float" name="CommercialRate" minOccurs="0" maxOccurs="1"/>
+            <xs:element type="xs:string" name="ServiceInformation" minOccurs="0" maxOccurs="1"/>
+            <xs:element type="xs:string" name="MaxDimensions" minOccurs="0" maxOccurs="1"/>
+            <xs:choice>
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element type="xs:string" name="CommitmentDate" minOccurs="1" maxOccurs="1"/>
+                    <xs:element type="LocationV4Type" name="Location" minOccurs="0" maxOccurs="200"/>
+                </xs:sequence>
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element type="CommitmentV4Type" name="Commitment" minOccurs="0" maxOccurs="5"/>
+                </xs:sequence>
+            </xs:choice>
+            <xs:element type="SpecialServicesV4ResponseType" name="SpecialServices" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+        <xs:attribute type="xs:int" name="CLASSID" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="ErrorV4Type">
+        <xs:sequence>
+            <xs:element type="xs:int" name="Number" minOccurs="1" maxOccurs="1"/>
+            <xs:element type="xs:string" name="Source" minOccurs="1" maxOccurs="1"/>
+            <xs:element type="xs:string" name="Description" minOccurs="1" maxOccurs="1"/>
+            <xs:element type="xs:string" name="HelpFile" minOccurs="0" maxOccurs="1"/>
+            <xs:element type="xs:string" name="HelpContext" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="CommitmentV4Type">
+        <xs:sequence>
+            <xs:element type="xs:string" name="CommitmentDate" minOccurs="1" maxOccurs="1"/>
+            <xs:element type="xs:string" name="CommitmentTime" minOccurs="1" maxOccurs="1"/>
+            <xs:element type="LocationV4Type" name="Location" minOccurs="1" maxOccurs="200"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="LocationV4Type">
+        <xs:sequence>
+            <xs:element type="xs:string" name="CutOff" minOccurs="1" maxOccurs="1"/>
+            <xs:element type="xs:string" name="Facility" minOccurs="1" maxOccurs="1"/>
+            <xs:element type="xs:string" name="Street" minOccurs="1" maxOccurs="1"/>
+            <xs:element type="xs:string" name="City" minOccurs="1" maxOccurs="1"/>
+            <xs:element type="xs:string" name="State" minOccurs="1" maxOccurs="1"/>
+            <xs:element type="xs:string" name="Zip" minOccurs="1" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ResponsePackageV4Type">
+        <xs:sequence>
+            <xs:element type="xs:string" name="ZipOrigination" minOccurs="1" maxOccurs="1"/>
+            <xs:element type="xs:string" name="ZipDestination" minOccurs="1" maxOccurs="1"/>
+            <xs:element type="xs:int" name="Pounds" minOccurs="1" maxOccurs="1"/>
+            <xs:element type="xs:float" name="Ounces" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="FirstClassMailType" minOccurs="0" maxOccurs="1">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="LETTER"/>
+                        <xs:enumeration value="FLAT"/>
+                        <xs:enumeration value="PARCEL"/>
+                        <xs:enumeration value="POSTCARD"/>
+                        <xs:enumeration value="PACKAGE SERVICE"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="Container" minOccurs="0" maxOccurs="1">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="VARIABLE"/>
+                        <xs:enumeration value="PADDED FLAT RATE ENVELOPE"/>
+                        <xs:enumeration value="LEGAL FLAT RATE ENVELOPE"/>
+                        <xs:enumeration value="SM FLAT RATE ENVELOPE"/>
+                        <xs:enumeration value="WINDOW FLAT RATE ENVELOPE"/>
+                        <xs:enumeration value="GIFT CARD FLAT RATE ENVELOPE"/>
+                        <xs:enumeration value="FLAT RATE BOX"/>
+                        <xs:enumeration value="SM FLAT RATE BOX"/>
+                        <xs:enumeration value="MD FLAT RATE BOX"/>
+                        <xs:enumeration value="LG FLAT RATE BOX"/>
+                        <xs:enumeration value="REGIONALRATEBOXA"/>
+                        <xs:enumeration value="REGIONALRATEBOXB"/>
+                        <xs:enumeration value="REGIONALRATEBOXC"/>
+                        <xs:enumeration value="RECTANGULAR"/>
+                        <xs:enumeration value="NONRECTANGULAR"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="Size" minOccurs="0" maxOccurs="1">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="REGULAR"/>
+                        <xs:enumeration value="LARGE"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element type="xs:float" name="Width" minOccurs="0" maxOccurs="1"/>
+            <xs:element type="xs:float" name="Length" minOccurs="0" maxOccurs="1"/>
+            <xs:element type="xs:float" name="Height" minOccurs="0" maxOccurs="1"/>
+            <xs:element type="xs:float" name="Girth" minOccurs="0" maxOccurs="1"/>
+            <xs:element type="xs:boolean" name="Machinable" minOccurs="0" maxOccurs="1"/>
+            <xs:element type="xs:string" name="Zone" minOccurs="1" maxOccurs="1"/>
+            <xs:element type="PostageV4Type" name="Postage" minOccurs="1" maxOccurs="unbounded"/>
+            <xs:element type="xs:string" name="Restrictions" minOccurs="0" maxOccurs="1"/>
+            <xs:element type="ErrorV4Type" name="Error" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+        <xs:attribute type="xs:string" name="ID" use="required"/>
+    </xs:complexType>
 
+    <xs:complexType name="SpecialServicesV4ResponseType">
+        <xs:sequence>
+            <xs:element name="SpecialService" minOccurs="1" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element type="xs:int" name="ServiceID" minOccurs="1" maxOccurs="1"/>
+                        <xs:element type="xs:string" name="ServiceName" minOccurs="1" maxOccurs="1"/>
+                        <xs:element type="xs:boolean" name="Available" minOccurs="1" maxOccurs="1"/>
+                        <xs:element type="xs:boolean" name="AvailableOnline" minOccurs="1" maxOccurs="1"/>
+                        <xs:element type="xs:float" name="Price" minOccurs="1" maxOccurs="1"/>
+                        <xs:element type="xs:float" name="PriceOnline" minOccurs="1" maxOccurs="1"/>
+                        <xs:element type="xs:boolean" name="DeclaredValueRequired" minOccurs="0" maxOccurs="1"/>
+                        <xs:element type="xs:boolean" name="DueSenderRequired" minOccurs="0" maxOccurs="1"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
 </xs:schema>

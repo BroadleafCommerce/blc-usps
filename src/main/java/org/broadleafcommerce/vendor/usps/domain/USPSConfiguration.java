@@ -33,14 +33,23 @@ public interface USPSConfiguration {
     public void setPassword(String password);
     
     /**
-     * This is the URL that should be used to call the web services. Consult the USPS documentation 
-     * for more information.
+     * This is the URL that should be used to call the web services (e.g. http://production.shippingapis.com/ShippingAPI.dll). 
+     * 
+     * Consult the USPS documentation for more information.
      * 
      * @param url
      */
     public void setApiUrl(String url);
     
     public String getApiUrl();
+    
+    /**
+     * This is to set the API (e.g. RateV4)
+     * @param api
+     */
+    public void setApi(String api);
+    
+    public String getApi();
     
     /**
      * This is the unit of measure to be used. It should be compatible with the country of 

@@ -52,6 +52,9 @@ public class USPSConfigurationImpl implements USPSConfiguration {
     @Column(name="API_URL", nullable = false)
     protected String apiUrl;
     
+    @Column(name="API", nullable = false)
+    protected String api;
+    
     @Column(name="MAX_WEIGHT_PER_PACKAGE", nullable = false)
     protected BigDecimal maximumWeightPerPackage;
     
@@ -133,4 +136,15 @@ public class USPSConfigurationImpl implements USPSConfiguration {
 		}
 		this.upchargePercentage = percentage;
 	}
+
+	@Override
+	public void setApi(String api) {
+		this.api = api;
+	}
+
+	@Override
+	public String getApi() {
+		return this.api;
+	}
+
 }

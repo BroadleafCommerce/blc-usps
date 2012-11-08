@@ -4,10 +4,10 @@ import org.broadleafcommerce.vendor.usps.domain.type.USPSServiceType;
 import org.broadleafcommerce.core.order.domain.FulfillmentOption;
 
 /**
- * UPS-specific fulfillment option
+ * USPS-specific fulfillment option
  * <p/>
  * User: Kelly Tisdell
- * Date: 7/12/12
+ * Date: 11/07/12
  */
 public interface USPSFulfillmentOption extends FulfillmentOption{
 
