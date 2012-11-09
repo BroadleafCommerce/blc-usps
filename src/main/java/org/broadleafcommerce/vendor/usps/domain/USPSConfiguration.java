@@ -1,6 +1,19 @@
+/*
+ * Copyright 2008-2012 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.broadleafcommerce.vendor.usps.domain;
-
-import org.broadleafcommerce.common.util.WeightUnitOfMeasureType;
 
 import java.math.BigDecimal;
 
@@ -52,26 +65,13 @@ public interface USPSConfiguration {
     public String getApi();
     
     /**
-     * This is the unit of measure to be used. It should be compatible with the country of 
-     * origin.
-     * @return
-     */
-    public WeightUnitOfMeasureType getWeightUnitOfMeasure();
-
-    /**
-     * Currently only supports {@link WeightUnitOfMeasureType#POUNDS} and {@link WeightUnitOfMeasureType#KILOGRAMS}
-     * @param uom
-     */
-    public void setWeightUnitOfMeasure(WeightUnitOfMeasureType uom);
-    
-    /**
-     * This is the maximum weight that can be in a single package.
+     * This is the maximum weight that can be in a single package. Weight for USPS is in LBS
      * @return
      */
     public BigDecimal getMaximumWeightPerPackage();
     
     /**
-     * Set the maximum weight for a single package. Note that USPS only supports packages up to 150 pounds
+     * Set the maximum weight for a single package. Units are in LBS.
      * 
      * @param weight
      */

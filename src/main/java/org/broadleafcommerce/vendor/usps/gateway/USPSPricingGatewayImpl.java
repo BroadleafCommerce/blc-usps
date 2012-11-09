@@ -1,3 +1,18 @@
+/*
+ * Copyright 2008-2012 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.broadleafcommerce.vendor.usps.gateway;
 
 import java.io.BufferedInputStream;
@@ -5,6 +20,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -12,24 +29,39 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Resource;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 
 import org.apache.commons.io.IOUtils;
+import org.broadleafcommerce.common.util.UnitOfMeasureUtil;
+import org.broadleafcommerce.common.util.WeightUnitOfMeasureType;
 import org.broadleafcommerce.common.vendor.service.exception.FulfillmentPriceException;
+import org.broadleafcommerce.core.catalog.domain.Weight;
+import org.broadleafcommerce.core.order.domain.BundleOrderItem;
+import org.broadleafcommerce.core.order.domain.DiscreteOrderItem;
 import org.broadleafcommerce.core.order.domain.FulfillmentGroup;
 import org.broadleafcommerce.core.order.domain.FulfillmentGroupItem;
+import org.broadleafcommerce.core.order.domain.OrderItem;
+import org.broadleafcommerce.core.pricing.service.fulfillment.FulfillmentLocationResolver;
+import org.broadleafcommerce.profile.core.domain.Address;
 import org.broadleafcommerce.vendor.usps.domain.USPSConfiguration;
+import org.broadleafcommerce.vendor.usps.domain.USPSFulfillmentOption;
 import org.springframework.beans.factory.InitializingBean;
 
 import com.usps.webtools.rates.ObjectFactory;
+import com.usps.webtools.rates.PostageV4Type;
 import com.usps.webtools.rates.RateV4RequestType;
 import com.usps.webtools.rates.RequestPackageV4Type;
 import com.usps.webtools.rates.ErrorV4Type;
 import com.usps.webtools.rates.RateV4ResponseType;
+import com.usps.webtools.rates.ResponsePackageV4Type;
 
 public class USPSPricingGatewayImpl implements USPSPricingGateway, InitializingBean {
+	
+	@Resource(name="blFulfillmentLocationResolver")
+	protected FulfillmentLocationResolver fulfillmentLocationResolver;
 	
 	protected JAXBContext jaxbContext;
 	
@@ -38,19 +70,29 @@ public class USPSPricingGatewayImpl implements USPSPricingGateway, InitializingB
 	protected String charSet = "UTF-8";
 	
 	@Override
-	public RateV4ResponseType retrieveDomesticRates(FulfillmentGroup fulfillmentGroup, List<FulfillmentGroupItem> fgItems, USPSConfiguration uspsConfiguration) throws FulfillmentPriceException {
+	public RateV4ResponseType retrieveDomesticRates(FulfillmentGroup fulfillmentGroup, List<FulfillmentGroupItem> fgItems, USPSConfiguration uspsConfiguration, boolean shop) throws FulfillmentPriceException {
 		
 		RateV4RequestType request = new RateV4RequestType();
 		request.setUSERID(uspsConfiguration.getUserName());
 		request.setPASSWORD(uspsConfiguration.getPassword());
 		request.setRevision(buildRevision(fulfillmentGroup, uspsConfiguration));
 		
-		List<RequestPackageV4Type> packages = buildPackages(fulfillmentGroup, fgItems, uspsConfiguration);
+		List<RequestPackageV4Type> packages = buildPackages(fulfillmentGroup, fgItems, uspsConfiguration, shop);
 		for (RequestPackageV4Type pkg : packages) {
 			request.getPackage().add(pkg);
 		}
 		
 		RateV4ResponseType response = executeCall(request, uspsConfiguration);
+		
+		//USPS returns giberish in some of their fields. Looks like markup of some kind.  Remove it here...
+		List<ResponsePackageV4Type> respPackages = response.getPackage();
+		for (ResponsePackageV4Type pkg : respPackages) {
+			List<PostageV4Type> postages = pkg.getPostage();
+			for (PostageV4Type postage : postages) {
+				postage.setMailService(postage.getMailService().replaceAll("&lt;sup&gt;&amp;reg;&lt;/sup&gt;", " ").trim());
+			}
+		}
+		
 		return response;
 	}
 	
@@ -59,22 +101,79 @@ public class USPSPricingGatewayImpl implements USPSPricingGateway, InitializingB
 		return "2";
 	}
 	
-	protected List<RequestPackageV4Type> buildPackages(FulfillmentGroup fulfillmentGroup, List<FulfillmentGroupItem> fgItems, USPSConfiguration uspsConfiguration) {
+	protected List<RequestPackageV4Type> buildPackages(FulfillmentGroup fulfillmentGroup, List<FulfillmentGroupItem> fgItems, USPSConfiguration uspsConfiguration, boolean shop) 
+		throws FulfillmentPriceException {
 		ArrayList<RequestPackageV4Type> packages = new ArrayList<RequestPackageV4Type>();
-		
-		RequestPackageV4Type pkg = new RequestPackageV4Type();
-		pkg.setID("1");
-		pkg.setZipOrigination(78746);
-		pkg.setZipDestination(78633);
-		pkg.setPounds(1);
-		pkg.setOunces(0);
-		pkg.setContainer("VARIABLE");
-		pkg.setSize("REGULAR");
-		pkg.setService("PARCEL");
-		pkg.setMachinable(true);
-		
-		packages.add(pkg);
-		
+		BigDecimal totalWeightLbs = BigDecimal.ZERO;
+		BigDecimal maxWeightPerPackage = uspsConfiguration.getMaximumWeightPerPackage();
+    	
+        for (FulfillmentGroupItem fgItem : fgItems) {
+        	BigDecimal skuWeight = null;
+	        OrderItem orderItem = fgItem.getOrderItem();
+	        Integer quantity = orderItem.getQuantity();
+            if (orderItem instanceof DiscreteOrderItem) {
+                DiscreteOrderItem discreteOrderItem = (DiscreteOrderItem)orderItem;
+                Weight weight = discreteOrderItem.getSku().getWeight();
+                WeightUnitOfMeasureType weightUnitOfMeasureType = weight.getWeightUnitOfMeasure();
+                
+                if (weightUnitOfMeasureType.equals(WeightUnitOfMeasureType.POUNDS)) {
+                	skuWeight = weight.getWeight();
+                } else if (WeightUnitOfMeasureType.KILOGRAMS.equals(weightUnitOfMeasureType)) {
+                	//Convert kilograms to lbs
+                	skuWeight = UnitOfMeasureUtil.convertKilogramsToPounds(weight.getWeight());
+                } else {
+                	throw new FulfillmentPriceException("Could not convert the UOM " + weightUnitOfMeasureType.getType() + " to LBS.");
+                }
+                
+                if (skuWeight.floatValue() > maxWeightPerPackage.floatValue()) {
+            		throw new FulfillmentPriceException("Sku " + discreteOrderItem.getSku().getId() + " exceeded the max package weight of " + maxWeightPerPackage.toString());
+            	}
+                totalWeightLbs = totalWeightLbs.add(skuWeight.multiply(new BigDecimal(quantity)));
+            } else if (orderItem instanceof BundleOrderItem) {
+            	List<DiscreteOrderItem> discreteOrderItems = ((BundleOrderItem)orderItem).getDiscreteOrderItems();
+            	for (DiscreteOrderItem discreteOrderItem : discreteOrderItems) {
+            		Weight weight = discreteOrderItem.getSku().getWeight();
+                    WeightUnitOfMeasureType weightUnitOfMeasureType = weight.getWeightUnitOfMeasure();
+                    if (weightUnitOfMeasureType.equals(WeightUnitOfMeasureType.POUNDS)) {
+                    	skuWeight = weight.getWeight();
+                    } else if (WeightUnitOfMeasureType.KILOGRAMS.equals(weightUnitOfMeasureType)) {
+                    	//Convert kilograms to lbs
+                    	skuWeight = UnitOfMeasureUtil.convertKilogramsToPounds(weight.getWeight());
+                    } else {
+                    	throw new FulfillmentPriceException("Could not convert the UOM " + weightUnitOfMeasureType.getType() + " to LBS.");
+                    }
+                    
+                    if (skuWeight.floatValue() > maxWeightPerPackage.floatValue()) {
+                		throw new FulfillmentPriceException("Sku " + discreteOrderItem.getSku().getId() + " exceeded the max package weight of " + maxWeightPerPackage.toString());
+                	}
+                    totalWeightLbs = totalWeightLbs.add(skuWeight.multiply(new BigDecimal(quantity)));
+            	}
+            }
+    	}
+        BigDecimal numberOfPackages = totalWeightLbs.divide(maxWeightPerPackage, 0, RoundingMode.CEILING);
+        BigDecimal weightPerPackage = totalWeightLbs.divide(numberOfPackages, 2, RoundingMode.HALF_UP);
+        
+        Address fulfillmentAddress = fulfillmentLocationResolver.resolveLocationForFulfillmentGroup(fulfillmentGroup);
+        
+        for (int i = 0; i < numberOfPackages.intValue(); i++) {
+        	RequestPackageV4Type pkg = new RequestPackageV4Type();
+        	StringBuilder packageId = new StringBuilder(String.valueOf(fulfillmentGroup.getOrder().getId())).append('-').append(i);
+        	pkg.setID(packageId.toString());
+    		pkg.setZipOrigination(Integer.parseInt(fulfillmentAddress.getPostalCode()));
+    		pkg.setZipDestination(Integer.parseInt(fulfillmentGroup.getAddress().getPostalCode()));
+    		pkg.setPounds(weightPerPackage.intValue());
+    		pkg.setOunces(0);
+    		pkg.setContainer("VARIABLE");
+    		pkg.setSize("REGULAR");
+    		if (shop) {
+    			pkg.setService("PARCEL POST");
+    		} else {
+    			pkg.setService(((USPSFulfillmentOption)fulfillmentGroup.getFulfillmentOption()).getService().getType());
+    		}
+    		pkg.setMachinable(true);
+    		packages.add(pkg);
+        }
+        
 		return packages;
 	}
 	
@@ -151,5 +250,9 @@ public class USPSPricingGatewayImpl implements USPSPricingGateway, InitializingB
 	
 	public void setCharSet(String charSet) {
 		this.charSet = charSet;
+	}
+	
+	public void setFulfillmentLocationResolver(FulfillmentLocationResolver resolver) {
+		this.fulfillmentLocationResolver = resolver;
 	}
 }
