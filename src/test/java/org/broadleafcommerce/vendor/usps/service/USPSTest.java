@@ -20,7 +20,6 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Properties;
 
@@ -70,11 +69,6 @@ public class USPSTest {
 		assertTrue(response.getPackage().size() > 0);
 		assertTrue(response.getPackage().get(0).getError() == null);
 		assertTrue(response.getPackage().get(0).getPostage().get(0).getRate() > 0);
-		try {
-		System.out.println(URLDecoder.decode(response.getPackage().get(0).getPostage().get(0).getMailService(), "UTF-8"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 	
 	/*
