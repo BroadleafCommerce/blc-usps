@@ -114,7 +114,7 @@ public class USPSFulfillmentPricingProvider implements FulfillmentPricingProvide
 		    	for (ResponsePackageV4Type pkg : packages) {
 		    		List<PostageV4Type> postages = pkg.getPostage();
 		    		for (PostageV4Type postage : postages) {
-			    		if (uspsFulfillmentOption.getService().getType().equals(postage.getMailService())) {
+			    		if (uspsFulfillmentOption.getService().getName().equals(postage.getMailService())) {
 			    			totalFees = new Money(totalAmount.add(new BigDecimal(postage.getRate())), DEFAULT_CURRENCY);
 			    			break;
 			    		}
@@ -128,7 +128,7 @@ public class USPSFulfillmentPricingProvider implements FulfillmentPricingProvide
 	    	for (ResponsePackageV4Type pkg : packages) {
 	    		List<PostageV4Type> postages = pkg.getPostage();
 	    		for (PostageV4Type postage : postages) {
-		    		if (uspsFulfillmentOption.getService().getType().equals(postage.getMailService())) {
+		    		if (uspsFulfillmentOption.getService().getName().equals(postage.getMailService())) {
 		    			totalFees = new Money(postage.getRate(), DEFAULT_CURRENCY);
 		    			break;
 		    		}
@@ -181,7 +181,7 @@ public class USPSFulfillmentPricingProvider implements FulfillmentPricingProvide
             		if (type.getError() == null) {
             			List<PostageV4Type> postages = type.getPostage();
             			for (PostageV4Type postage : postages) {
-            				if (uspsOption.getService().getType().equals(postage.getMailService())) {
+            				if (uspsOption.getService().getName().equals(postage.getMailService())) {
             					BigDecimal totalAmount = new BigDecimal(postage.getRate());
                     			totalAmount = totalAmount.setScale(2, RoundingMode.HALF_UP);
                     			if (config.getUpchargePercentage() != null) {
@@ -269,4 +269,11 @@ public class USPSFulfillmentPricingProvider implements FulfillmentPricingProvide
     	return false;
 	}
 
+	public void setUspsPricingGateway(USPSPricingGateway gateway) {
+		this.uspsPricingGateway = gateway;
+	}
+	
+	public void setUspsConfigurationService(USPSConfigurationService service) {
+		this.uspsConfigurationService = service;
+	}
 }

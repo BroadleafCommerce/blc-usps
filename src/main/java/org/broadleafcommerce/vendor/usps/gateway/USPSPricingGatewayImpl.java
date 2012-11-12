@@ -48,6 +48,7 @@ import org.broadleafcommerce.core.pricing.service.fulfillment.FulfillmentLocatio
 import org.broadleafcommerce.profile.core.domain.Address;
 import org.broadleafcommerce.vendor.usps.domain.USPSConfiguration;
 import org.broadleafcommerce.vendor.usps.domain.USPSFulfillmentOption;
+import org.broadleafcommerce.vendor.usps.domain.type.USPSServiceType;
 import org.springframework.beans.factory.InitializingBean;
 
 import com.usps.webtools.rates.ObjectFactory;
@@ -89,7 +90,7 @@ public class USPSPricingGatewayImpl implements USPSPricingGateway, InitializingB
 		for (ResponsePackageV4Type pkg : respPackages) {
 			List<PostageV4Type> postages = pkg.getPostage();
 			for (PostageV4Type postage : postages) {
-				postage.setMailService(postage.getMailService().replaceAll("&lt;sup&gt;&amp;reg;&lt;/sup&gt;", " ").trim());
+				postage.setMailService(postage.getMailService().replaceAll("&lt;sup&gt;&amp;reg;&lt;/sup&gt;", "").trim().toUpperCase());
 			}
 		}
 		
@@ -150,31 +151,106 @@ public class USPSPricingGatewayImpl implements USPSPricingGateway, InitializingB
             	}
             }
     	}
+        //Find the address to be shipped from.
+        Address fulfillmentAddress = fulfillmentLocationResolver.resolveLocationForFulfillmentGroup(fulfillmentGroup);
+        
+        //Calculate the number of packages and weight per package.
         BigDecimal numberOfPackages = totalWeightLbs.divide(maxWeightPerPackage, 0, RoundingMode.CEILING);
         BigDecimal weightPerPackage = totalWeightLbs.divide(numberOfPackages, 2, RoundingMode.HALF_UP);
         
-        Address fulfillmentAddress = fulfillmentLocationResolver.resolveLocationForFulfillmentGroup(fulfillmentGroup);
+        BigDecimal weightPoundsPerPackage = weightPerPackage.setScale(0, RoundingMode.DOWN);
         
+        BigDecimal weightOuncesPerPackage;
+        if (weightPerPackage.floatValue() >= 1F) {
+	        BigDecimal remainder = weightPerPackage.remainder(weightPoundsPerPackage);
+	        weightOuncesPerPackage = remainder.multiply(new BigDecimal(16)).setScale(2, RoundingMode.HALF_UP);
+        } else {
+        	weightOuncesPerPackage = weightPerPackage.multiply(new BigDecimal(16)).setScale(2, RoundingMode.HALF_UP);
+        }
+        
+        /*
+         * Note that it is nearly impossible to guess how each client wants to build packages for the purpose of shipping. 
+         * We are going to make this as generic as possible. In the future it might be good to provide an interface to build packages from fulfillment groups based on 
+         * size, weight, and whether items are machinable.  
+         * In the mean time, clients can use this basic algorithm, which assumes all items are machinable, and which uses regular sized packages.
+         */
         for (int i = 0; i < numberOfPackages.intValue(); i++) {
         	RequestPackageV4Type pkg = new RequestPackageV4Type();
         	StringBuilder packageId = new StringBuilder(String.valueOf(fulfillmentGroup.getOrder().getId())).append('-').append(i);
         	pkg.setID(packageId.toString());
     		pkg.setZipOrigination(Integer.parseInt(fulfillmentAddress.getPostalCode()));
     		pkg.setZipDestination(Integer.parseInt(fulfillmentGroup.getAddress().getPostalCode()));
-    		pkg.setPounds(weightPerPackage.intValue());
-    		pkg.setOunces(0);
-    		pkg.setContainer("VARIABLE");
-    		pkg.setSize("REGULAR");
-    		if (shop) {
-    			pkg.setService("PARCEL POST");
-    		} else {
-    			pkg.setService(((USPSFulfillmentOption)fulfillmentGroup.getFulfillmentOption()).getService().getType());
-    		}
-    		pkg.setMachinable(true);
+    		pkg.setPounds(weightPoundsPerPackage.intValue());
+    		pkg.setOunces(weightOuncesPerPackage.floatValue());
+    		
+    		//We allow clients to simply override this method.
+    		buildPackageVariables(pkg, fulfillmentGroup, uspsConfiguration, shop);
     		packages.add(pkg);
         }
         
 		return packages;
+	}
+	
+	protected void buildPackageVariables(RequestPackageV4Type pkg, FulfillmentGroup fulfillmentGroup, USPSConfiguration uspsConfiguration, boolean shop) {
+		
+		/*
+		 * Size can be REGULAR or LARGE
+		 * Large is any package dimension over 12 inches
+		 */
+		pkg.setSize("REGULAR");
+		
+		/*
+		 * Container can be one of:
+		 * FLAT RATE ENVELOPE
+		 * PADDED FLAT RATE ENVELOPE
+		 * LEGAL FLAT RATE ENVELOPE
+		 * SM FLAT RATE ENVELOPE
+		 * WINDOW FLAT RATE ENVELOPE
+		 * GIFT CARD FLAT RATE ENVELOPE
+		 * FLAT RATE BOX
+		 * SM FLAT RATE BOX
+		 * MD FLAT RATE BOX
+		 * LG FLAT RATE BOX
+		 * REGIONALRATEBOXA
+		 * REGIONALRATEBOXB
+		 * REGIONALRATEBOXC
+		 * RECTANGULAR
+		 * NONRECTANGULAR
+		 * 
+		 * If size is LARGE, container must be either RECTANGULAR or NONRECTANGULAR. We'll default it 
+		 * to VARIABLE.
+		 */
+		pkg.setContainer("VARIABLE");
+		
+		//If someone is shopping for rates, we use ALL, otherwise, we use one of the services provided by the enum passed in.
+		if (shop) {
+			//Special case. Set the specific service to shop for all services.
+			pkg.setService("ALL");
+		} else {
+			pkg.setService(((USPSFulfillmentOption)fulfillmentGroup.getFulfillmentOption()).getService().getName());
+			
+			/*
+			 * If Service is FIRST CLASS, FIRST CLASS COMMERCIAL, or FIRST CLASS HFP COMMERCIAL, then the 
+			 * firstClassMailType property must be set.
+			 */
+			if (USPSServiceType.FIRST_CLASS.getName().equals(pkg.getService()) 
+					|| USPSServiceType.FIRST_CLASS_COMMERCIAL.getName().equals(pkg.getService())
+					|| USPSServiceType.FIRST_CLASS_HFP_COMMERCIAL.getName().equals(pkg.getService())) {
+				
+				/*
+				 * Set it to parcel by default. Possibilities are:
+				 * LETTER
+				 * FLAT
+				 * PARCEL
+				 * POST CARD
+				 * PAKCAGE SERVICE
+				 */
+				pkg.setFirstClassMailType("PARCEL");
+			}
+		}
+		
+		//Set machinable to true by default.
+		pkg.setMachinable(true);
 	}
 	
 	protected RateV4ResponseType executeCall(RateV4RequestType request, USPSConfiguration uspsConfiguration) throws FulfillmentPriceException {

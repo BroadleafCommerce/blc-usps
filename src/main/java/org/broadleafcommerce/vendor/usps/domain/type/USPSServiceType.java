@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.broadleafcommerce.common.BroadleafEnumerationType;
-import org.broadleafcommerce.common.util.StringUtil;
 
 /**
  * An extendible enumeration of usps shipping method types.
@@ -33,74 +32,46 @@ public class USPSServiceType implements Serializable, BroadleafEnumerationType {
     private static final long serialVersionUID = 1L;
 
     private static final Map<String, USPSServiceType> TYPES = new HashMap<String, USPSServiceType>();
-    private static final Map<String, USPSServiceType> NAMEDTYPES = new HashMap<String, USPSServiceType>();
-
-    public static final USPSServiceType FIRSTCLASS  = new USPSServiceType("0", "FIRSTCLASS", "First Class");
-    public static final USPSServiceType PRIORITYMAIL = new USPSServiceType("1", "PRIORITYMAIL", "Priority Mail");
-    public static final USPSServiceType EXPRESSMAILHOLDFORPICKUP = new USPSServiceType("2", "EXPRESSMAILHOLDFORPICKUP", "Express Mail Hold for Pickup");
-    public static final USPSServiceType EXPRESSMAILPOTOADDRESSEE = new USPSServiceType("3", "EXPRESSMAILPOTOADDRESSEE", "Express Mail PO to Addressee");
-    public static final USPSServiceType PARCELPOST = new USPSServiceType("4", "PARCELPOST", "Parcel Post");
-    public static final USPSServiceType BOUNDPRINTEDMATTER = new USPSServiceType("5", "BOUNDPRINTEDMATTER", "Bound Printed Matter");
-    public static final USPSServiceType MEDIAMAIL = new USPSServiceType("6", "MEDIAMAIL", "Media Mail");
-    public static final USPSServiceType LIBRARY = new USPSServiceType("7", "LIBRARY", "Library Mail");
-    public static final USPSServiceType FIRSTCLASSPOSTCARDSTAMPED = new USPSServiceType("12", "FIRSTCLASSPOSTCARDSTAMPED", "First Class Postcard Stamped");
-    public static final USPSServiceType EXPRESSMAILFLATRATEENVELOPE = new USPSServiceType("13", "EXPRESSMAILFLATRATEENVELOPE", "Express Mail Flat Rate Envelope");
-    public static final USPSServiceType PRIORITYMAILFLATRATEENVELOPE = new USPSServiceType("16", "PRIORITYMAILFLATRATEENVELOPE", "Priority Mail Flat Rate Envelope");
-    public static final USPSServiceType PRIORITYMAILFLATRATEBOX = new USPSServiceType("17", "PRIORITYMAILFLATRATEBOX", "Priority Mail Flat Rate Box");
-    public static final USPSServiceType PRIORITYMAILKEYSANDIDS = new USPSServiceType("18", "PRIORITYMAILKEYSANDIDS", "Priority Mail Keys and IDs");
-    public static final USPSServiceType FIRSTCLASSKEYSANDIDS = new USPSServiceType("19", "FIRSTCLASSKEYSANDIDS", "First Class Keys and IDs");
-    public static final USPSServiceType PRIORITYMAILFLATRATELARGEBOX = new USPSServiceType("22", "PRIORITYMAILFLATRATELARGEBOX", "Priority Mail Flat Rate Large Box");
-    public static final USPSServiceType EXPRESSMAILSUNDAYHOLIDAY = new USPSServiceType("23", "EXPRESSMAILSUNDAYHOLIDAY", "Express Mail Sunday/Holiday");
-    public static final USPSServiceType EXPRESSMAILFLATRATEENVELOPESUNDAYHOLIDAY = new USPSServiceType("25", "EXPRESSMAILFLATRATEENVELOPESUNDAYHOLIDAY", "Express Mail Flat Rate Envelope Sunday/Holiday");
-    public static final USPSServiceType EXPRESSMAILFLATRATEENVELOPEHOLDFORPICKUP = new USPSServiceType("27", "EXPRESSMAILFLATRATEENVELOPEHOLDFORPICKUP", "Express Mail Flat Rate Envelope Hold For Pickup");
-
+    private static final Map<String, USPSServiceType> NAMES = new HashMap<String, USPSServiceType>();
+    
+    public static final USPSServiceType FIRST_CLASS  = new USPSServiceType("FIRST_CLASS", "FIRST CLASS", "First Class");
+    public static final USPSServiceType FIRST_CLASS_COMMERCIAL  = new USPSServiceType("FIRST_CLASS_COMMERCIAL", "FIRST CLASS COMMERCIAL", "First Class Commercial");
+    public static final USPSServiceType FIRST_CLASS_HFP_COMMERCIAL  = new USPSServiceType("FIRST_CLASS_HFP_COMMERCIAL", "FIRST CLASS HFP COMMERCIAL", "First Class HFP Commercial");
+    public static final USPSServiceType PRIORITY  = new USPSServiceType("PRIORITY", "PRIORITY", "Priority");
+    public static final USPSServiceType PRIORITY_COMMERCIAL  = new USPSServiceType("PRIORITY_COMMERCIAL", "PRIORITY COMMERCIAL", "Priority Commercial");
+    public static final USPSServiceType PRIORITY_HFP_COMMERCIAL  = new USPSServiceType("PRIORITY_HFP_COMMERCIAL", "PRIORITY HFP COMMERCIAL", "Priority HFP Commercial");
+    public static final USPSServiceType EXPRESS  = new USPSServiceType("EXPRESS", "EXPRESS", "Express");
+    public static final USPSServiceType EXPRESS_COMMERCIAL  = new USPSServiceType("EXPRESS_COMMERCIAL", "EXPRESS COMMERCIAL", "Express Commercial");
+    public static final USPSServiceType EXPRESS_SH  = new USPSServiceType("EXPRESS_SH", "EXPRESS SH", "Express SH");
+    public static final USPSServiceType EXPRESS_SH_COMMERCIAL  = new USPSServiceType("EXPRESS_SH_COMMERCIAL", "EXPRESS SH COMMERCIAL", "Express SH Commercial");
+    public static final USPSServiceType EXPRESS_HFP  = new USPSServiceType("EXPRESS_HFP", "EXPRESS HFP", "Express HFP");
+    public static final USPSServiceType EXPRESS_HFP_COMMERCIAL  = new USPSServiceType("EXPRESS_HFP_COMMERCIAL", "EXPRESS HFP COMMERCIAL", "Express HFP Commercial");
+    public static final USPSServiceType PARCEL_POST  = new USPSServiceType("PARCEL_POST", "PARCEL POST", "Parcel Post");
+    public static final USPSServiceType MEDIA_MAIL  = new USPSServiceType("MEDIA_MAIL", "MEDIA MAIL", "Media Mail");
+    public static final USPSServiceType LIBRARY_MAIL  = new USPSServiceType("LIBRARY_MAIL", "LIBRARY MAIL", "Library Mail");
+    public static final USPSServiceType ONLINE  = new USPSServiceType("ONLINE", "ONLINE", "Online");
+    
     public static USPSServiceType getInstance(final String type) {
         return TYPES.get(type);
     }
     
-    public static USPSServiceType getInstanceByName(final String name) {
-        return NAMEDTYPES.get(name);
-    }
-
-    public static USPSServiceType getInstanceByDescription(final String description) {
-        //remove any dimension callouts
-        String lDescription = description.replaceAll("\\(.*?\\)", "");
-        USPSServiceType closestMatch = null;
-        Double closestChecksumDeviation = null;
-        for (USPSServiceType type : TYPES.values()) {
-            double deviation = StringUtil.determineSimilarity(lDescription, type.getDescription());
-            if (
-                    (closestChecksumDeviation == null && deviation <= 5000000.0) ||
-                    (closestChecksumDeviation != null && deviation < closestChecksumDeviation)
-            ){
-                closestChecksumDeviation = deviation;
-                closestMatch = type;
-            }
-        }
-        return closestMatch;
-    }
-
     private String type;
-    private String description;
+    private String friendlyType;
     private String name;
 
     public USPSServiceType() {
         //do nothing
     }
 
-    public USPSServiceType(final String type, final String name, final String description) {
-        this.description = description;
+    public USPSServiceType(final String type, final String name, final String friendlyType) {
+        this.friendlyType = friendlyType;
         setType(type);
         setName(name);
     }
 
     public String getType() {
-        return type;
+        return this.type;
     }
-
-    public String getFriendlyType() {
-		return description;
-	}
 
 	private void setType(final String type) {
         this.type = type;
@@ -108,25 +79,22 @@ public class USPSServiceType implements Serializable, BroadleafEnumerationType {
             TYPES.put(type, this);
         }
     }
-
-    public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-        if (!NAMEDTYPES.containsKey(name)) {
-        	NAMEDTYPES.put(name, this);
+	
+	private void setName(final String name) {
+        this.name = name;
+        if (!NAMES.containsKey(name)) {
+            NAMES.put(name, this);
         }
+    }
+	
+	public String getName() {
+		return this.name;
 	}
-
-	public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(final String description) {
-        this.description = description;
-    }
+    
+    @Override
+	public String getFriendlyType() {
+		return this.friendlyType;
+	}
 
     @Override
     public int hashCode() {
