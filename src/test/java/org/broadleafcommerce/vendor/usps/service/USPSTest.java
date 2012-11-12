@@ -192,9 +192,9 @@ public class USPSTest {
 		EasyMock.expect(fg.getFulfillmentGroupItems()).andReturn(fgItems).anyTimes();
 		EasyMock.expect(fg.getFulfillmentOption()).andReturn(option).anyTimes();
 		fg.setRetailShippingPrice(EasyMock.anyObject(Money.class));
-		EasyMock.expectLastCall().atLeastOnce();
+		EasyMock.expectLastCall().times(1);
 		fg.setSaleShippingPrice(EasyMock.anyObject(Money.class));
-		EasyMock.expectLastCall().atLeastOnce();
+		EasyMock.expectLastCall().times(1);
 		EasyMock.replay(fg);
 		
 		return fg;
