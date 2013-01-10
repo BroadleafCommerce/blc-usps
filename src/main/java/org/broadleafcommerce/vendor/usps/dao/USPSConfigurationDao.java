@@ -24,11 +24,11 @@ import org.broadleafcommerce.vendor.usps.domain.USPSConfiguration;
  */
 public interface USPSConfigurationDao {
 
-	public USPSConfiguration findUSPSConfiguration();
-	
-	public USPSConfiguration saveUSPSConfiguration(USPSConfiguration config);
-	
-	public void deleteUSPSConfiguration(USPSConfiguration config);
-	
-	public USPSConfiguration createUSPSConfiguration();
+    public USPSConfiguration findUSPSConfiguration();
+    
+    public USPSConfiguration saveUSPSConfiguration(USPSConfiguration config);
+    
+    public void deleteUSPSConfiguration(USPSConfiguration config);
+    
+    public USPSConfiguration createUSPSConfiguration();
 }

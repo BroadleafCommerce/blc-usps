@@ -73,28 +73,28 @@ public class USPSServiceType implements Serializable, BroadleafEnumerationType {
         return this.type;
     }
 
-	private void setType(final String type) {
+    private void setType(final String type) {
         this.type = type;
         if (!TYPES.containsKey(type)) {
             TYPES.put(type, this);
         }
     }
-	
-	private void setName(final String name) {
+    
+    private void setName(final String name) {
         this.name = name;
         if (!NAMES.containsKey(name)) {
             NAMES.put(name, this);
         }
     }
-	
-	public String getName() {
-		return this.name;
-	}
+    
+    public String getName() {
+        return this.name;
+    }
     
     @Override
-	public String getFriendlyType() {
-		return this.friendlyType;
-	}
+    public String getFriendlyType() {
+        return this.friendlyType;
+    }
 
     @Override
     public int hashCode() {

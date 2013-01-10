@@ -114,37 +114,37 @@ public class USPSConfigurationImpl implements USPSConfiguration {
         return this.apiUrl;
     }
 
-	@Override
-	public BigDecimal getMaximumWeightPerPackage() {
-		return this.maximumWeightPerPackage;
-	}
+    @Override
+    public BigDecimal getMaximumWeightPerPackage() {
+        return this.maximumWeightPerPackage;
+    }
 
-	@Override
-	public void setMaximumWeightPerPackage(BigDecimal weight) {
-		this.maximumWeightPerPackage = weight;
-	}
+    @Override
+    public void setMaximumWeightPerPackage(BigDecimal weight) {
+        this.maximumWeightPerPackage = weight;
+    }
 
-	@Override
-	public BigDecimal getUpchargePercentage() {
-		return this.upchargePercentage;
-	}
+    @Override
+    public BigDecimal getUpchargePercentage() {
+        return this.upchargePercentage;
+    }
 
-	@Override
-	public void setUpchargePercentage(BigDecimal percentage) {
-		if (percentage.doubleValue() <= 0D) {
-			throw new IllegalArgumentException("USPS upcharge must be a positive number.");
-		}
-		this.upchargePercentage = percentage;
-	}
+    @Override
+    public void setUpchargePercentage(BigDecimal percentage) {
+        if (percentage.doubleValue() <= 0D) {
+            throw new IllegalArgumentException("USPS upcharge must be a positive number.");
+        }
+        this.upchargePercentage = percentage;
+    }
 
-	@Override
-	public void setApi(String api) {
-		this.api = api;
-	}
+    @Override
+    public void setApi(String api) {
+        this.api = api;
+    }
 
-	@Override
-	public String getApi() {
-		return this.api;
-	}
+    @Override
+    public String getApi() {
+        return this.api;
+    }
 
 }

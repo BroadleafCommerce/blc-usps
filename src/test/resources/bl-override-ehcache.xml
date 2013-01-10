@@ -15,13 +15,13 @@
   -->
 
 <ehcache>
-	
-   	<cache
-    	name="CyberSourceTaxRequests"
-    	maxElementsInMemory="1000000"
-    	eternal="false"
-    	overflowToDisk="true"
-    	timeToLiveSeconds="100"
-    	timeToIdleSeconds="100"/>
-    	
+    
+    <cache
+        name="CyberSourceTaxRequests"
+        maxElementsInMemory="1000000"
+        eternal="false"
+        overflowToDisk="true"
+        timeToLiveSeconds="100"
+        timeToIdleSeconds="100"/>
+        
 </ehcache>

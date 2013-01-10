@@ -29,27 +29,27 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional("blTransactionManager")
 public class USPSConfigurationServiceImpl implements USPSConfigurationService {
 
-	@Resource(name="blUSPSConfigurationDao")
-	protected USPSConfigurationDao uspsConfigDao;
-	
-	@Override
-	public USPSConfiguration findUSPSConfiguration() {
-		return uspsConfigDao.findUSPSConfiguration();
-	}
+    @Resource(name="blUSPSConfigurationDao")
+    protected USPSConfigurationDao uspsConfigDao;
+    
+    @Override
+    public USPSConfiguration findUSPSConfiguration() {
+        return uspsConfigDao.findUSPSConfiguration();
+    }
 
-	@Override
-	public USPSConfiguration saveUSPSConfiguration(USPSConfiguration config) {
-		return uspsConfigDao.saveUSPSConfiguration(config);
-	}
+    @Override
+    public USPSConfiguration saveUSPSConfiguration(USPSConfiguration config) {
+        return uspsConfigDao.saveUSPSConfiguration(config);
+    }
 
-	@Override
-	public void deleteUSPSConfiguration(USPSConfiguration config) {
-		uspsConfigDao.deleteUSPSConfiguration(config);
-	}
-	
-	@Override
-	public USPSConfiguration createUSPSConfiguration() {
-		return uspsConfigDao.createUSPSConfiguration();
-	}
+    @Override
+    public void deleteUSPSConfiguration(USPSConfiguration config) {
+        uspsConfigDao.deleteUSPSConfiguration(config);
+    }
+    
+    @Override
+    public USPSConfiguration createUSPSConfiguration() {
+        return uspsConfigDao.createUSPSConfiguration();
+    }
 
 }

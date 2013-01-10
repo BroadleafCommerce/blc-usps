@@ -33,40 +33,40 @@ import java.util.List;
  */
 public class USPSConfigurationDaoImpl implements USPSConfigurationDao {
 
-	@PersistenceContext(unitName="blPU")
-	protected EntityManager em;
-	
-	@Resource(name="blEntityConfiguration")
-	protected EntityConfiguration entityConfiguration;
-	
-	@Override
-	@SuppressWarnings("unchecked")
-	public USPSConfiguration findUSPSConfiguration() {
-		StringBuffer queryString = new StringBuffer("select uspsConfig from ");
-		queryString.append(entityConfiguration.lookupEntityClass(USPSConfiguration.class.getName()).getName()).append(" uspsConfig");
-		Query query = em.createQuery(queryString.toString());
-		query.setMaxResults(1);
-		query.setHint(QueryHints.HINT_CACHEABLE, true);
-		List<USPSConfiguration> configs = query.getResultList();
-		if (configs != null && configs.size() > 0) {
-			return configs.get(0);
-		}
-		return null;
-	}
+    @PersistenceContext(unitName="blPU")
+    protected EntityManager em;
+    
+    @Resource(name="blEntityConfiguration")
+    protected EntityConfiguration entityConfiguration;
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public USPSConfiguration findUSPSConfiguration() {
+        StringBuffer queryString = new StringBuffer("select uspsConfig from ");
+        queryString.append(entityConfiguration.lookupEntityClass(USPSConfiguration.class.getName()).getName()).append(" uspsConfig");
+        Query query = em.createQuery(queryString.toString());
+        query.setMaxResults(1);
+        query.setHint(QueryHints.HINT_CACHEABLE, true);
+        List<USPSConfiguration> configs = query.getResultList();
+        if (configs != null && configs.size() > 0) {
+            return configs.get(0);
+        }
+        return null;
+    }
 
-	@Override
-	public USPSConfiguration saveUSPSConfiguration(USPSConfiguration config) {
-		return em.merge(config);
-	}
+    @Override
+    public USPSConfiguration saveUSPSConfiguration(USPSConfiguration config) {
+        return em.merge(config);
+    }
 
-	@Override
-	public void deleteUSPSConfiguration(USPSConfiguration config) {
-		em.remove(config);
-	}
-	
-	@Override
-	public USPSConfiguration createUSPSConfiguration() {
-		return (USPSConfiguration)entityConfiguration.createEntityInstance(USPSConfiguration.class.getName());
-	}
+    @Override
+    public void deleteUSPSConfiguration(USPSConfiguration config) {
+        em.remove(config);
+    }
+    
+    @Override
+    public USPSConfiguration createUSPSConfiguration() {
+        return (USPSConfiguration)entityConfiguration.createEntityInstance(USPSConfiguration.class.getName());
+    }
 
 }
