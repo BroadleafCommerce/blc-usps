@@ -16,11 +16,11 @@
 
 package org.broadleafcommerce.vendor.usps.domain.type;
 
+import org.broadleafcommerce.common.BroadleafEnumerationType;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.broadleafcommerce.common.BroadleafEnumerationType;
 
 /**
  * An extendible enumeration of usps shipping method types.
@@ -40,7 +40,7 @@ public class USPSServiceType implements Serializable, BroadleafEnumerationType {
     public static final USPSServiceType PRIORITY  = new USPSServiceType("PRIORITY", "PRIORITY", "Priority");
     public static final USPSServiceType PRIORITY_COMMERCIAL  = new USPSServiceType("PRIORITY_COMMERCIAL", "PRIORITY COMMERCIAL", "Priority Commercial");
     public static final USPSServiceType PRIORITY_HFP_COMMERCIAL  = new USPSServiceType("PRIORITY_HFP_COMMERCIAL", "PRIORITY HFP COMMERCIAL", "Priority HFP Commercial");
-    public static final USPSServiceType EXPRESS  = new USPSServiceType("EXPRESS", "EXPRESS", "Express");
+    public static final USPSServiceType EXPRESS_MAIL = new USPSServiceType("EXPRESS_MAIL", "EXPRESS MAIL", "Express Mail");
     public static final USPSServiceType EXPRESS_COMMERCIAL  = new USPSServiceType("EXPRESS_COMMERCIAL", "EXPRESS COMMERCIAL", "Express Commercial");
     public static final USPSServiceType EXPRESS_SH  = new USPSServiceType("EXPRESS_SH", "EXPRESS SH", "Express SH");
     public static final USPSServiceType EXPRESS_SH_COMMERCIAL  = new USPSServiceType("EXPRESS_SH_COMMERCIAL", "EXPRESS SH COMMERCIAL", "Express SH Commercial");
@@ -69,6 +69,7 @@ public class USPSServiceType implements Serializable, BroadleafEnumerationType {
         setName(name);
     }
 
+    @Override
     public String getType() {
         return this.type;
     }

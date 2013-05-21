@@ -15,16 +15,9 @@
  */
 package org.broadleafcommerce.vendor.usps.service;
 
-import static org.junit.Assert.*;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Properties;
-
-import javax.xml.bind.JAXBContext;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.broadleafcommerce.common.currency.domain.BroadleafCurrency;
 import org.broadleafcommerce.common.money.Money;
@@ -57,6 +50,15 @@ import com.usps.webtools.rates.PostageV4Type;
 import com.usps.webtools.rates.RateV4ResponseType;
 import com.usps.webtools.rates.ResponsePackageV4Type;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Properties;
+
+import javax.xml.bind.JAXBContext;
+
 public class USPSTest {
     
     protected USPSFulfillmentPricingProvider provider;
@@ -86,7 +88,7 @@ public class USPSTest {
         USPSFulfillmentOption option2 = EasyMock.createMock(USPSFulfillmentOption.class);
         EasyMock.expect(option2.getService()).andReturn(USPSServiceType.FIRST_CLASS).anyTimes();
         USPSFulfillmentOption option3 = EasyMock.createMock(USPSFulfillmentOption.class);
-        EasyMock.expect(option3.getService()).andReturn(USPSServiceType.PRIORITY).anyTimes();
+        EasyMock.expect(option3.getService()).andReturn(USPSServiceType.EXPRESS_MAIL).anyTimes();
         
         EasyMock.replay(option1, option2, option3);
         
@@ -182,7 +184,7 @@ public class USPSTest {
         
         USPSFulfillmentOption option = EasyMock.createMock(USPSFulfillmentOption.class);
         EasyMock.expect(option.getUseFlatRates()).andReturn(false).anyTimes();
-        EasyMock.expect(option.getService()).andReturn(USPSServiceType.PARCEL_POST).anyTimes();
+        EasyMock.expect(option.getService()).andReturn(USPSServiceType.EXPRESS_MAIL).anyTimes();
         EasyMock.replay(option);
         
         FulfillmentGroup fg = EasyMock.createMock(FulfillmentGroup.class);
