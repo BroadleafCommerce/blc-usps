@@ -33,14 +33,14 @@ public class USPSServiceType implements Serializable, BroadleafEnumerationType {
 
     private static final Map<String, USPSServiceType> TYPES = new HashMap<String, USPSServiceType>();
     private static final Map<String, USPSServiceType> NAMES = new HashMap<String, USPSServiceType>();
-    
+
     public static final USPSServiceType FIRST_CLASS  = new USPSServiceType("FIRST_CLASS", "FIRST CLASS", "First Class");
     public static final USPSServiceType FIRST_CLASS_COMMERCIAL  = new USPSServiceType("FIRST_CLASS_COMMERCIAL", "FIRST CLASS COMMERCIAL", "First Class Commercial");
     public static final USPSServiceType FIRST_CLASS_HFP_COMMERCIAL  = new USPSServiceType("FIRST_CLASS_HFP_COMMERCIAL", "FIRST CLASS HFP COMMERCIAL", "First Class HFP Commercial");
     public static final USPSServiceType PRIORITY  = new USPSServiceType("PRIORITY", "PRIORITY", "Priority");
     public static final USPSServiceType PRIORITY_COMMERCIAL  = new USPSServiceType("PRIORITY_COMMERCIAL", "PRIORITY COMMERCIAL", "Priority Commercial");
     public static final USPSServiceType PRIORITY_HFP_COMMERCIAL  = new USPSServiceType("PRIORITY_HFP_COMMERCIAL", "PRIORITY HFP COMMERCIAL", "Priority HFP Commercial");
-    public static final USPSServiceType EXPRESS_MAIL = new USPSServiceType("EXPRESS_MAIL", "EXPRESS MAIL", "Express Mail");
+    public static final USPSServiceType EXPRESS = new USPSServiceType("EXPRESS", "EXPRESS", "Express");
     public static final USPSServiceType EXPRESS_COMMERCIAL  = new USPSServiceType("EXPRESS_COMMERCIAL", "EXPRESS COMMERCIAL", "Express Commercial");
     public static final USPSServiceType EXPRESS_SH  = new USPSServiceType("EXPRESS_SH", "EXPRESS SH", "Express SH");
     public static final USPSServiceType EXPRESS_SH_COMMERCIAL  = new USPSServiceType("EXPRESS_SH_COMMERCIAL", "EXPRESS SH COMMERCIAL", "Express SH Commercial");
