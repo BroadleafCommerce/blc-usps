@@ -4,21 +4,15 @@
  * %%
  * Copyright (C) 2009 - 2016 Broadleaf Commerce
  * %%
- * Licensed under the Broadleaf End User License Agreement (EULA), Version 1.1
- * (the "Commercial License" located at http://license.broadleafcommerce.org/commercial_license-1.1.txt).
+ * Licensed under the Broadleaf Fair Use License Agreement, Version 1.0
+ * (the "Fair Use License" located  at http://license.broadleafcommerce.org/fair_use_license-1.0.txt)
+ * unless the restrictions on use therein are violated and require payment to Broadleaf in which case
+ * the Broadleaf End User License Agreement (EULA), Version 1.1
+ * (the "Commercial License" located at http://license.broadleafcommerce.org/commercial_license-1.1.txt)
+ * shall apply.
  * 
  * Alternatively, the Commercial License may be replaced with a mutually agreed upon license (the "Custom License")
  * between you and Broadleaf Commerce. You may not use this file except in compliance with the applicable license.
- * 
- * NOTICE:  All information contained herein is, and remains
- * the property of Broadleaf Commerce, LLC
- * The intellectual and technical concepts contained
- * herein are proprietary to Broadleaf Commerce, LLC
- * and may be covered by U.S. and Foreign Patents,
- * patents in process, and are protected by trade secret or copyright law.
- * Dissemination of this information or reproduction of this material
- * is strictly forbidden unless prior written permission is obtained
- * from Broadleaf Commerce, LLC.
  * #L%
  */
 /*
@@ -109,9 +103,9 @@ public class USPSTest {
         USPSFulfillmentOption option1 = EasyMock.createMock(USPSFulfillmentOption.class);
         EasyMock.expect(option1.getService()).andReturn(USPSServiceType.PARCEL_POST).anyTimes();
         USPSFulfillmentOption option2 = EasyMock.createMock(USPSFulfillmentOption.class);
-        EasyMock.expect(option2.getService()).andReturn(USPSServiceType.FIRST_CLASS).anyTimes();
+        EasyMock.expect(option2.getService()).andReturn(USPSServiceType.PRIORITY_2DAY).anyTimes();
         USPSFulfillmentOption option3 = EasyMock.createMock(USPSFulfillmentOption.class);
-        EasyMock.expect(option3.getService()).andReturn(USPSServiceType.EXPRESS).anyTimes();
+        EasyMock.expect(option3.getService()).andReturn(USPSServiceType.PRIORITY_EXPRESS_1DAY).anyTimes();
         
         EasyMock.replay(option1, option2, option3);
         
