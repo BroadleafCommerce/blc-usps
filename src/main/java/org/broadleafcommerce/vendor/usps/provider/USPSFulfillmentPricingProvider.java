@@ -54,6 +54,7 @@ import org.broadleafcommerce.core.order.domain.OrderItem;
 import org.broadleafcommerce.core.order.service.type.FulfillmentType;
 import org.broadleafcommerce.core.pricing.service.fulfillment.provider.FulfillmentEstimationResponse;
 import org.broadleafcommerce.core.pricing.service.fulfillment.provider.FulfillmentPricingProvider;
+import org.broadleafcommerce.profile.core.domain.Address;
 import org.broadleafcommerce.vendor.usps.domain.USPSConfiguration;
 import org.broadleafcommerce.vendor.usps.domain.USPSFulfillmentOption;
 import org.broadleafcommerce.vendor.usps.domain.type.USPSServiceType;
@@ -226,7 +227,7 @@ public class USPSFulfillmentPricingProvider implements FulfillmentPricingProvide
                     if (type.getError() == null) {
                         List<PostageV4Type> postages = type.getPostage();
                         for (PostageV4Type postage : postages) {
-                            if (uspsOption.getService().getName().equals(postage.getMailService())) {
+                            if (doesMatchMailService(uspsOption.getService(), postage.getMailService())) {
                                 BigDecimal totalAmount = new BigDecimal(postage.getRate());
                                 totalAmount = totalAmount.setScale(2, RoundingMode.HALF_UP);
                                 if (config.getUpchargePercentage() != null) {
@@ -252,16 +253,24 @@ public class USPSFulfillmentPricingProvider implements FulfillmentPricingProvide
         return response;
     }
 
+    protected boolean isCountryValid(FulfillmentGroup fulfillmentGroup) {
+        Address address = fulfillmentGroup.getAddress();
+        String abbreviation = "";
+        if(address.getIsoCountryAlpha2() != null) {
+            abbreviation = address.getIsoCountryAlpha2().getAlpha2();
+        } else if(address.getCountry() != null) {
+            abbreviation = address.getCountry().getAbbreviation();
+        } else if(address.getIsoCountrySubdivision() != null) {
+            abbreviation = address.getIsoCountrySubdivision().substring(0, 2);
+        }
+        return "US".equals(abbreviation);
+    }
+
     @Override
     public boolean canCalculateCostForFulfillmentGroup(
             FulfillmentGroup fulfillmentGroup, FulfillmentOption option) {
         //no address associated with the fulfillment group, can't calculate it
-        if (fulfillmentGroup.getAddress() == null || fulfillmentGroup.getAddress().getCountry() == null) {
-            return false;
-        }
-        
-        //If the address is outside of the US, we can't price it. This may change when we implement international shipping with USPS.
-        if (! "US".equals(fulfillmentGroup.getAddress().getCountry().getAbbreviation())) {
+        if (fulfillmentGroup.getAddress() == null || !isCountryValid(fulfillmentGroup)) {
             return false;
         }
         
