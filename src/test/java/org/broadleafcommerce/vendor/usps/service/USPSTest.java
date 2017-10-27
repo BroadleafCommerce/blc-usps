@@ -37,6 +37,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.broadleafcommerce.common.currency.domain.BroadleafCurrency;
+import org.broadleafcommerce.common.i18n.domain.ISOCountry;
 import org.broadleafcommerce.common.money.Money;
 import org.broadleafcommerce.common.util.WeightUnitOfMeasureType;
 import org.broadleafcommerce.common.vendor.service.exception.FulfillmentPriceException;
@@ -179,7 +180,11 @@ public class USPSTest {
         EasyMock.expect(order.getOrderItems()).andReturn(orderItems).anyTimes();
         EasyMock.expect(order.getCurrency()).andReturn(currency).anyTimes();
         EasyMock.replay(order);
-        
+
+        ISOCountry isoCountry = EasyMock.createMock(ISOCountry.class);
+        EasyMock.expect(isoCountry.getAlpha2()).andReturn("US").anyTimes();
+        EasyMock.replay(isoCountry);
+
         Country country = EasyMock.createMock(Country.class);
         EasyMock.expect(country.getAbbreviation()).andReturn("US").anyTimes();
         EasyMock.replay(country);
@@ -187,6 +192,7 @@ public class USPSTest {
         
         Address address = EasyMock.createMock(Address.class);
         EasyMock.expect(address.getCountry()).andReturn(country).anyTimes();
+        EasyMock.expect(address.getIsoCountryAlpha2()).andReturn(isoCountry).anyTimes();
         EasyMock.expect(address.getPostalCode()).andReturn("77549").anyTimes();
         EasyMock.replay(address);
         assertEquals(address.getCountry(), country);
