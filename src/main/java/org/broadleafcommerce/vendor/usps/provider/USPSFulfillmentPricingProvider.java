@@ -318,7 +318,7 @@ public class USPSFulfillmentPricingProvider implements FulfillmentPricingProvide
             }
         }
         String fulfillmentType = (fulfillmentGroup.getType() == null) ? null : fulfillmentGroup.getType().getType();
-        LOG.warn("USPS not calculating shipments for FulfillmentGroup with option class: " + option.getClass() + " and type: " + fulfillmentType);
+        LOG.debug("USPS not calculating shipments for FulfillmentGroup with option class: " + option.getClass() + " and type: " + fulfillmentType);
         
         return false;
     }
