@@ -175,6 +175,7 @@ public class USPSFulfillmentPricingProvider implements FulfillmentPricingProvide
         
         fulfillmentGroup.setRetailShippingPrice(totalFees);
         fulfillmentGroup.setSaleShippingPrice(totalFees);
+        fulfillmentGroup.setRetailFulfillmentPrice(totalFees);
         
         return fulfillmentGroup;
     }
