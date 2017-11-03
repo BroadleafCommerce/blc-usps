@@ -207,7 +207,7 @@ public class USPSTest {
         
         USPSFulfillmentOption option = EasyMock.createMock(USPSFulfillmentOption.class);
         EasyMock.expect(option.getUseFlatRates()).andReturn(false).anyTimes();
-        EasyMock.expect(option.getService()).andReturn(USPSServiceType.EXPRESS).anyTimes();
+        EasyMock.expect(option.getService()).andReturn(USPSServiceType.PRIORITY).anyTimes();
         EasyMock.replay(option);
         
         FulfillmentGroup fg = EasyMock.createMock(FulfillmentGroup.class);
@@ -220,6 +220,8 @@ public class USPSTest {
         EasyMock.expectLastCall().times(1);
         fg.setSaleShippingPrice(EasyMock.anyObject(Money.class));
         EasyMock.expectLastCall().times(1);
+        fg.setRetailFulfillmentPrice(EasyMock.anyObject(Money.class));
+        EasyMock.expectLastCall().anyTimes();
         EasyMock.replay(fg);
         
         return fg;
