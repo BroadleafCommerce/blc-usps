@@ -77,8 +77,6 @@ public class USPSFulfillmentPricingProvider implements FulfillmentPricingProvide
     @Resource(name="blUSPSConfigurationService")
     protected USPSConfigurationService uspsConfigurationService;
 
-    protected Map<USPSServiceType, List<USPSServiceType>> serviceEquivelancyMap = createServiceTypeEquivelancyMapping();
-
     @Override
     public FulfillmentGroup calculateCostForFulfillmentGroup(
             FulfillmentGroup fulfillmentGroup) throws FulfillmentPriceException {
@@ -176,6 +174,7 @@ public class USPSFulfillmentPricingProvider implements FulfillmentPricingProvide
         fulfillmentGroup.setRetailShippingPrice(totalFees);
         fulfillmentGroup.setSaleShippingPrice(totalFees);
         fulfillmentGroup.setRetailFulfillmentPrice(totalFees);
+        fulfillmentGroup.setShippingPrice(totalFees);
         
         return fulfillmentGroup;
     }
@@ -183,25 +182,11 @@ public class USPSFulfillmentPricingProvider implements FulfillmentPricingProvide
     protected boolean doesMatchMailService(USPSServiceType serviceType, String mailService) {
         if(serviceType.getName().equals(mailService)) {
             return true;
-        } else {
-            if(serviceEquivelancyMap.containsKey(serviceType)) {
-                List<USPSServiceType> serviceTypes = serviceEquivelancyMap.get(serviceType);
-                for(USPSServiceType equivelantServiceType : serviceTypes) {
-                    return doesMatchMailService(equivelantServiceType, mailService);
-                }
-            }
+        } else if(serviceType.getPattern() != null) {
+            return serviceType.getPattern().matcher(mailService).matches();
         }
 
         return false;
-    }
-
-    protected Map<USPSServiceType, List<USPSServiceType>> createServiceTypeEquivelancyMapping() {
-        Map<USPSServiceType, List<USPSServiceType>> map = Maps.newHashMap();
-        map.put(USPSServiceType.EXPRESS, Lists.newArrayList(USPSServiceType.PRIORITY_EXPRESS_1DAY));
-        map.put(USPSServiceType.PRIORITY, Lists.newArrayList(USPSServiceType.PRIORITY_2DAY));
-        map.put(USPSServiceType.MEDIA_MAIL, Lists.newArrayList(USPSServiceType.MEDIA_MAIL_PARCEL));
-        map.put(USPSServiceType.LIBRARY_MAIL, Lists.newArrayList(USPSServiceType.LIBRARY_MAIL_PARCEL));
-        return map;
     }
 
     @Override

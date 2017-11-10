@@ -78,18 +78,18 @@ import java.util.Properties;
 import javax.xml.bind.JAXBContext;
 
 public class USPSTest {
-    
+
     protected USPSFulfillmentPricingProvider provider;
     protected USPSPricingGatewayImpl gateway;
     protected USPSConfigurationImpl configuration;
-    
+
     @Before
     public void setup() throws Exception {
         configuration = createConfiguration();
         gateway = createGateway();
         provider = createProvider();
     }
-    
+
     @Test
     public void testProviderCanCalculate() {
         USPSFulfillmentOption option = EasyMock.createMock(USPSFulfillmentOption.class);
@@ -98,7 +98,7 @@ public class USPSTest {
         boolean can = provider.canCalculateCostForFulfillmentGroup(createBasicDomesticFulfillmentGroup(), option);
         assertTrue(can);
     }
-    
+
     @Test
     public void testProviderEstimate() throws FulfillmentPriceException {
         USPSFulfillmentOption option1 = EasyMock.createMock(USPSFulfillmentOption.class);
@@ -107,24 +107,24 @@ public class USPSTest {
         EasyMock.expect(option2.getService()).andReturn(USPSServiceType.PRIORITY_2DAY).anyTimes();
         USPSFulfillmentOption option3 = EasyMock.createMock(USPSFulfillmentOption.class);
         EasyMock.expect(option3.getService()).andReturn(USPSServiceType.PRIORITY_EXPRESS_1DAY).anyTimes();
-        
+
         EasyMock.replay(option1, option2, option3);
-        
+
         HashSet<FulfillmentOption> options = new HashSet<FulfillmentOption>();
         options.add(option1);
         options.add(option2);
         options.add(option3);
-        
+
         FulfillmentEstimationResponse response = provider.estimateCostForFulfillmentGroup(createBasicDomesticFulfillmentGroup(), options);
         assertFalse(response.getFulfillmentOptionPrices().isEmpty());
         System.out.println(response.getFulfillmentOptionPrices().size());
     }
-    
+
     @Test
     public void testProviderCalculate() throws FulfillmentPriceException {
         provider.calculateCostForFulfillmentGroup(createBasicDomesticFulfillmentGroup());
     }
-    
+
     @Test
     public void testBasicProviderCall() {
         USPSFulfillmentOption option = EasyMock.createMock(USPSFulfillmentOption.class);
@@ -133,7 +133,7 @@ public class USPSTest {
         boolean can = provider.canCalculateCostForFulfillmentGroup(createBasicDomesticFulfillmentGroup(), option);
         assertTrue(can);
     }
-    
+
     @Test
     public void testBasicGatewayCall() throws FulfillmentPriceException {
         FulfillmentGroup fg = createBasicDomesticFulfillmentGroup();
@@ -141,14 +141,14 @@ public class USPSTest {
         assertTrue(response.getPackage().size() > 0);
         assertTrue(response.getPackage().get(0).getError() == null);
         assertTrue(response.getPackage().get(0).getPostage().get(0).getRate() > 0);
-        
+
         for (ResponsePackageV4Type pkg : response.getPackage()) {
             for (PostageV4Type postage : pkg.getPostage()) {
                 System.out.println(postage.getMailService() + " : " + postage.getRate());
             }
         }
     }
-    
+
     /*
      * Creates a FulfillmentGroup with a single FGItem.
      */
@@ -158,23 +158,23 @@ public class USPSTest {
         weight.setWeight(new BigDecimal("1.21"));
         weight.setWeightUnitOfMeasure(WeightUnitOfMeasureType.POUNDS);
         EasyMock.expect(sku.getWeight()).andReturn(weight).anyTimes();
-        
+
         ArrayList<FulfillmentOption> excludedFulfillmentOptions = new ArrayList<FulfillmentOption>();
         EasyMock.expect(sku.getExcludedFulfillmentOptions()).andReturn(excludedFulfillmentOptions).anyTimes();
         EasyMock.replay(sku);
-        
+
         DiscreteOrderItem oi = EasyMock.createMock(DiscreteOrderItem.class);
         EasyMock.expect(oi.getSku()).andReturn(sku).anyTimes();
         EasyMock.expect(oi.getQuantity()).andReturn(1).anyTimes();
         EasyMock.replay(oi);
-        
+
         ArrayList<OrderItem> orderItems = new ArrayList<OrderItem>();
         orderItems.add(oi);
-        
+
         BroadleafCurrency currency = EasyMock.createMock(BroadleafCurrency.class);
         EasyMock.expect(currency.getCurrencyCode()).andReturn("USD").anyTimes();
         EasyMock.replay(currency);
-        
+
         Order order = EasyMock.createMock(Order.class);
         EasyMock.expect(order.getId()).andReturn(1L).anyTimes();
         EasyMock.expect(order.getOrderItems()).andReturn(orderItems).anyTimes();
@@ -189,27 +189,27 @@ public class USPSTest {
         EasyMock.expect(country.getAbbreviation()).andReturn("US").anyTimes();
         EasyMock.replay(country);
         assertEquals(country.getAbbreviation(), "US");
-        
+
         Address address = EasyMock.createMock(Address.class);
         EasyMock.expect(address.getCountry()).andReturn(country).anyTimes();
         EasyMock.expect(address.getIsoCountryAlpha2()).andReturn(isoCountry).anyTimes();
-        EasyMock.expect(address.getPostalCode()).andReturn("77549").anyTimes();
+        EasyMock.expect(address.getPostalCode()).andReturn("20850").anyTimes();
         EasyMock.replay(address);
         assertEquals(address.getCountry(), country);
-        
+
         FulfillmentGroupItem fgItem = EasyMock.createMock(FulfillmentGroupItem.class);
         EasyMock.expect(fgItem.getQuantity()).andReturn(1).anyTimes();
         EasyMock.expect(fgItem.getOrderItem()).andReturn(oi).anyTimes();
         EasyMock.replay(fgItem);
-        
+
         ArrayList<FulfillmentGroupItem> fgItems = new ArrayList<FulfillmentGroupItem>();
         fgItems.add(fgItem);
-        
+
         USPSFulfillmentOption option = EasyMock.createMock(USPSFulfillmentOption.class);
         EasyMock.expect(option.getUseFlatRates()).andReturn(false).anyTimes();
         EasyMock.expect(option.getService()).andReturn(USPSServiceType.PRIORITY).anyTimes();
         EasyMock.replay(option);
-        
+
         FulfillmentGroup fg = EasyMock.createMock(FulfillmentGroup.class);
         EasyMock.expect(fg.getType()).andReturn(FulfillmentType.PHYSICAL_SHIP).anyTimes();
         EasyMock.expect(fg.getAddress()).andReturn(address).anyTimes();
@@ -222,47 +222,49 @@ public class USPSTest {
         EasyMock.expectLastCall().times(1);
         fg.setRetailFulfillmentPrice(EasyMock.anyObject(Money.class));
         EasyMock.expectLastCall().anyTimes();
+        fg.setShippingPrice(EasyMock.anyObject(Money.class));
+        EasyMock.expectLastCall().anyTimes();
         EasyMock.replay(fg);
-        
+
         return fg;
     }
-    
+
     protected USPSPricingGatewayImpl createGateway() throws Exception {
         USPSPricingGatewayImpl uspsGateway = new USPSPricingGatewayImpl();
         uspsGateway.setJaxbContext(JAXBContext.newInstance("com.usps.webtools.rates"));
-        
+
         Country country = EasyMock.createMock(Country.class);
         EasyMock.expect(country.getAbbreviation()).andReturn("US").anyTimes();
         EasyMock.replay(country);
         assertEquals(country.getAbbreviation(), "US");
-        
+
         Address address = EasyMock.createMock(Address.class);
         EasyMock.expect(address.getCountry()).andReturn(country).anyTimes();
-        EasyMock.expect(address.getPostalCode()).andReturn("78746").anyTimes();
+        EasyMock.expect(address.getPostalCode()).andReturn("20785").anyTimes();
         EasyMock.replay(address);
         assertEquals(address.getCountry(), country);
-        
+
         FulfillmentLocationResolver resolver = EasyMock.createMock(FulfillmentLocationResolver.class);
         EasyMock.expect(resolver.resolveLocationForFulfillmentGroup(EasyMock.anyObject(FulfillmentGroup.class))).andReturn(address).anyTimes();
         EasyMock.replay(resolver);
         assertEquals(resolver.resolveLocationForFulfillmentGroup(new FulfillmentGroupImpl()).getCountry().getAbbreviation(), "US");
-        
+
         uspsGateway.setFulfillmentLocationResolver(resolver);
         return uspsGateway;
     }
-    
+
     protected USPSFulfillmentPricingProvider createProvider() {
         USPSFulfillmentPricingProvider uspsProv = new USPSFulfillmentPricingProvider();
-        
+
         USPSConfigurationService configService = EasyMock.createMock(USPSConfigurationService.class);
         EasyMock.expect(configService.findUSPSConfiguration()).andReturn(configuration).anyTimes();
         EasyMock.replay(configService);
-        
+
         uspsProv.setUspsPricingGateway(gateway);
         uspsProv.setUspsConfigurationService(configService);
         return uspsProv;
     }
-    
+
     protected USPSConfigurationImpl createConfiguration() {
         InputStream is = USPSTest.class.getResourceAsStream("/config/bc/override/development.properties");
         Properties props = new Properties();
@@ -279,7 +281,7 @@ public class USPSTest {
                 }
             }
         }
-        
+
         USPSConfigurationImpl configuration = new USPSConfigurationImpl();
         configuration.setMaximumWeightPerPackage(new BigDecimal("150"));
         configuration.setApiUrl(props.getProperty("usps.url"));
