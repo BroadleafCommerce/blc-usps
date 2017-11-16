@@ -107,13 +107,16 @@ public class USPSTest {
         EasyMock.expect(option2.getService()).andReturn(USPSServiceType.PRIORITY_2DAY).anyTimes();
         USPSFulfillmentOption option3 = EasyMock.createMock(USPSFulfillmentOption.class);
         EasyMock.expect(option3.getService()).andReturn(USPSServiceType.PRIORITY_EXPRESS_1DAY).anyTimes();
+        USPSFulfillmentOption option4 = EasyMock.createMock(USPSFulfillmentOption.class);
+        EasyMock.expect(option4.getService()).andReturn(USPSServiceType.PRIORITY).anyTimes();
 
-        EasyMock.replay(option1, option2, option3);
+        EasyMock.replay(option1, option2, option3, option4);
 
         HashSet<FulfillmentOption> options = new HashSet<FulfillmentOption>();
         options.add(option1);
         options.add(option2);
         options.add(option3);
+        options.add(option4);
 
         FulfillmentEstimationResponse response = provider.estimateCostForFulfillmentGroup(createBasicDomesticFulfillmentGroup(), options);
         assertFalse(response.getFulfillmentOptionPrices().isEmpty());
@@ -158,6 +161,7 @@ public class USPSTest {
         weight.setWeight(new BigDecimal("1.21"));
         weight.setWeightUnitOfMeasure(WeightUnitOfMeasureType.POUNDS);
         EasyMock.expect(sku.getWeight()).andReturn(weight).anyTimes();
+        EasyMock.expect(sku.getName()).andReturn("Heavy Product").anyTimes();
 
         ArrayList<FulfillmentOption> excludedFulfillmentOptions = new ArrayList<FulfillmentOption>();
         EasyMock.expect(sku.getExcludedFulfillmentOptions()).andReturn(excludedFulfillmentOptions).anyTimes();

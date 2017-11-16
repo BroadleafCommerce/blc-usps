@@ -173,8 +173,9 @@
     </build>
     <distributionManagement>
         <snapshotRepository>
-            <id>snapshots</id>
-            <url>http://nexus.broadleafcommerce.org/nexus/content/repositories/usps-snapshots/</url>
+            <id>art-snapshots</id>
+            <name>artifactory.finra.org-snapshots</name>
+            <url>https://artifactory.finra.org/artifactory/ext-snapshot-local</url>
         </snapshotRepository>
         <repository>
             <id>releases</id>
