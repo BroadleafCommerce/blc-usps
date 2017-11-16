@@ -53,6 +53,8 @@ import javax.xml.bind.JAXBException;
 
 import com.google.common.base.CharMatcher;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.broadleafcommerce.common.util.UnitOfMeasureUtil;
 import org.broadleafcommerce.common.util.WeightUnitOfMeasureType;
 import org.broadleafcommerce.common.vendor.service.exception.FulfillmentPriceException;
@@ -79,6 +81,8 @@ import com.usps.webtools.rates.RateV4ResponseType;
 import com.usps.webtools.rates.ResponsePackageV4Type;
 
 public class USPSPricingGatewayImpl implements USPSPricingGateway, InitializingBean {
+
+    protected final Log logger = LogFactory.getLog(this.getClass());
     
     @Resource(name="blFulfillmentLocationResolver")
     protected FulfillmentLocationResolver fulfillmentLocationResolver;
@@ -169,6 +173,8 @@ public class USPSPricingGatewayImpl implements USPSPricingGateway, InitializingB
         BigDecimal weightPerPackage = totalWeightLbs.divide(numberOfPackages, 2, RoundingMode.HALF_UP);
         
         BigDecimal weightPoundsPerPackage = weightPerPackage.setScale(0, RoundingMode.DOWN);
+
+        logger.debug("Weight for USPS in pounds: " + weightPerPackage);
         
         BigDecimal weightOuncesPerPackage;
         if (weightPerPackage.floatValue() >= 1F) {
@@ -177,6 +183,8 @@ public class USPSPricingGatewayImpl implements USPSPricingGateway, InitializingB
         } else {
             weightOuncesPerPackage = weightPerPackage.multiply(new BigDecimal(16)).setScale(2, RoundingMode.HALF_UP);
         }
+
+        logger.debug("Weight for USPS in ounces: " + weightOuncesPerPackage);
         
         /*
          * Note that it is nearly impossible to guess how each client wants to build packages for the purpose of shipping. 
@@ -205,6 +213,7 @@ public class USPSPricingGatewayImpl implements USPSPricingGateway, InitializingB
     protected BigDecimal convertWeightToPounds(BigDecimal weight, WeightUnitOfMeasureType weightUnit) throws FulfillmentPriceException {
         BigDecimal convertedWeight;
 
+        logger.debug("Converting " + weight + weightUnit.getType() + " to Pounds.");
         if(WeightUnitOfMeasureType.POUNDS.equals(weightUnit)) {
             convertedWeight = weight;
         } else if(WeightUnitOfMeasureType.KILOGRAMS.equals(weightUnit)) {
@@ -213,14 +222,20 @@ public class USPSPricingGatewayImpl implements USPSPricingGateway, InitializingB
             throw new FulfillmentPriceException("Incompatible Weight Unit: " + weightUnit.getType() + ". Cannot convert to Kilograms.");
         }
 
+        logger.debug("Converted weight is now " + convertedWeight + WeightUnitOfMeasureType.POUNDS.getType());
         return convertedWeight;
     }
 
     private BigDecimal getWeightFromSku(Sku sku) {
+        BigDecimal returnWeight;
         Weight weight = sku.getWeight();
         if(weight == null || weight.getWeight() == null) {
-            return minimumWeight;
-        } else { return weight.getWeight(); }
+            returnWeight = minimumWeight;
+        } else { returnWeight = weight.getWeight(); }
+
+        logger.debug("Weight from sku item: " + sku.getName() + " is " + returnWeight);
+
+        return returnWeight;
     }
 
     private WeightUnitOfMeasureType getWUoMFromSku(Sku sku) {
