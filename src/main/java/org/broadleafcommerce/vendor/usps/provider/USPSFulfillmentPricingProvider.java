@@ -249,7 +249,7 @@ public class USPSFulfillmentPricingProvider implements FulfillmentPricingProvide
         } else if(address.getIsoCountrySubdivision() != null) {
             abbreviation = address.getIsoCountrySubdivision().substring(0, 2);
         }
-        return "US".equals(abbreviation);
+        return "US".equals(abbreviation) || "MI".equals(abbreviation);
     }
 
     @Override
