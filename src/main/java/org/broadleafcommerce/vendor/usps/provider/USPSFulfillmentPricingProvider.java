@@ -4,21 +4,15 @@
  * %%
  * Copyright (C) 2009 - 2016 Broadleaf Commerce
  * %%
- * Licensed under the Broadleaf End User License Agreement (EULA), Version 1.1
- * (the "Commercial License" located at http://license.broadleafcommerce.org/commercial_license-1.1.txt).
+ * Licensed under the Broadleaf Fair Use License Agreement, Version 1.0
+ * (the "Fair Use License" located  at http://license.broadleafcommerce.org/fair_use_license-1.0.txt)
+ * unless the restrictions on use therein are violated and require payment to Broadleaf in which case
+ * the Broadleaf End User License Agreement (EULA), Version 1.1
+ * (the "Commercial License" located at http://license.broadleafcommerce.org/commercial_license-1.1.txt)
+ * shall apply.
  * 
  * Alternatively, the Commercial License may be replaced with a mutually agreed upon license (the "Custom License")
  * between you and Broadleaf Commerce. You may not use this file except in compliance with the applicable license.
- * 
- * NOTICE:  All information contained herein is, and remains
- * the property of Broadleaf Commerce, LLC
- * The intellectual and technical concepts contained
- * herein are proprietary to Broadleaf Commerce, LLC
- * and may be covered by U.S. and Foreign Patents,
- * patents in process, and are protected by trade secret or copyright law.
- * Dissemination of this information or reproduction of this material
- * is strictly forbidden unless prior written permission is obtained
- * from Broadleaf Commerce, LLC.
  * #L%
  */
 /*
@@ -40,13 +34,12 @@ package org.broadleafcommerce.vendor.usps.provider;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import javax.annotation.Resource;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.broadleafcommerce.common.money.Money;
@@ -61,8 +54,10 @@ import org.broadleafcommerce.core.order.domain.OrderItem;
 import org.broadleafcommerce.core.order.service.type.FulfillmentType;
 import org.broadleafcommerce.core.pricing.service.fulfillment.provider.FulfillmentEstimationResponse;
 import org.broadleafcommerce.core.pricing.service.fulfillment.provider.FulfillmentPricingProvider;
+import org.broadleafcommerce.profile.core.domain.Address;
 import org.broadleafcommerce.vendor.usps.domain.USPSConfiguration;
 import org.broadleafcommerce.vendor.usps.domain.USPSFulfillmentOption;
+import org.broadleafcommerce.vendor.usps.domain.type.USPSServiceType;
 import org.broadleafcommerce.vendor.usps.gateway.USPSPricingGateway;
 import org.broadleafcommerce.vendor.usps.service.USPSConfigurationService;
 
@@ -148,10 +143,12 @@ public class USPSFulfillmentPricingProvider implements FulfillmentPricingProvide
         } else {
             rateResponse = uspsPricingGateway.retrieveDomesticRates(fulfillmentGroup, fulfillmentGroup.getFulfillmentGroupItems(), config, false);
             List<ResponsePackageV4Type> packages = rateResponse.getPackage();
+            LOG.debug("Debuging packages...");
             for (ResponsePackageV4Type pkg : packages) {
+                LOG.debug(pkg.toString());
                 List<PostageV4Type> postages = pkg.getPostage();
                 for (PostageV4Type postage : postages) {
-                    if (uspsFulfillmentOption.getService().getName().equals(postage.getMailService())) {
+                    if(doesMatchMailService(uspsFulfillmentOption.getService(), postage.getMailService())) {
                         totalFees = new Money(postage.getRate(), DEFAULT_CURRENCY);
                         break;
                     }
@@ -176,8 +173,20 @@ public class USPSFulfillmentPricingProvider implements FulfillmentPricingProvide
         
         fulfillmentGroup.setRetailShippingPrice(totalFees);
         fulfillmentGroup.setSaleShippingPrice(totalFees);
+        fulfillmentGroup.setRetailFulfillmentPrice(totalFees);
+        fulfillmentGroup.setShippingPrice(totalFees);
         
         return fulfillmentGroup;
+    }
+
+    protected boolean doesMatchMailService(USPSServiceType serviceType, String mailService) {
+        if(serviceType.getName().equals(mailService)) {
+            return true;
+        } else if(serviceType.getPattern() != null) {
+            return serviceType.getPattern().matcher(mailService).matches();
+        }
+
+        return false;
     }
 
     @Override
@@ -204,7 +213,7 @@ public class USPSFulfillmentPricingProvider implements FulfillmentPricingProvide
                     if (type.getError() == null) {
                         List<PostageV4Type> postages = type.getPostage();
                         for (PostageV4Type postage : postages) {
-                            if (uspsOption.getService().getName().equals(postage.getMailService())) {
+                            if (doesMatchMailService(uspsOption.getService(), postage.getMailService())) {
                                 BigDecimal totalAmount = new BigDecimal(postage.getRate());
                                 totalAmount = totalAmount.setScale(2, RoundingMode.HALF_UP);
                                 if (config.getUpchargePercentage() != null) {
@@ -230,16 +239,24 @@ public class USPSFulfillmentPricingProvider implements FulfillmentPricingProvide
         return response;
     }
 
+    protected boolean isCountryValid(FulfillmentGroup fulfillmentGroup) {
+        Address address = fulfillmentGroup.getAddress();
+        String abbreviation = "";
+        if(address.getIsoCountryAlpha2() != null) {
+            abbreviation = address.getIsoCountryAlpha2().getAlpha2();
+        } else if(address.getCountry() != null) {
+            abbreviation = address.getCountry().getAbbreviation();
+        } else if(address.getIsoCountrySubdivision() != null) {
+            abbreviation = address.getIsoCountrySubdivision().substring(0, 2);
+        }
+        return "US".equals(abbreviation) || "MI".equals(abbreviation);
+    }
+
     @Override
     public boolean canCalculateCostForFulfillmentGroup(
             FulfillmentGroup fulfillmentGroup, FulfillmentOption option) {
         //no address associated with the fulfillment group, can't calculate it
-        if (fulfillmentGroup.getAddress() == null || fulfillmentGroup.getAddress().getCountry() == null) {
-            return false;
-        }
-        
-        //If the address is outside of the US, we can't price it. This may change when we implement international shipping with USPS.
-        if (! "US".equals(fulfillmentGroup.getAddress().getCountry().getAbbreviation())) {
+        if (fulfillmentGroup.getAddress() == null || !isCountryValid(fulfillmentGroup)) {
             return false;
         }
         
@@ -287,7 +304,7 @@ public class USPSFulfillmentPricingProvider implements FulfillmentPricingProvide
             }
         }
         String fulfillmentType = (fulfillmentGroup.getType() == null) ? null : fulfillmentGroup.getType().getType();
-        LOG.warn("USPS not calculating shipments for FulfillmentGroup with option class: " + option.getClass() + " and type: " + fulfillmentType);
+        LOG.debug("USPS not calculating shipments for FulfillmentGroup with option class: " + option.getClass() + " and type: " + fulfillmentType);
         
         return false;
     }
